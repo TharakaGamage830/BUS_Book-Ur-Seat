@@ -1,0 +1,389 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ============================================
+   DESIGN SYSTEM — 60:30:10 Color Rule
+   60% = Background (neutral)
+   30% = Blue (brand / interactive)
+   10% = Gold (accent / CTA)
+   ============================================ */
+
+/* Light Theme */
+[data-theme='light'] {
+  --color-bg:           #F4F5FD;
+  --color-bg-card:      #FFFFFF;
+  --color-bg-nav:       #2D2FC4;
+  --color-secondary:    #3D3FD4;
+  --color-secondary-hover: #2D2FB8;
+  --color-accent:       #F5A623;
+  --color-accent-hover: #E09510;
+  --color-text:         #1A1A2E;
+  --color-text-muted:   #6B7280;
+  --color-text-inv:     #FFFFFF;
+  --color-border:       #E2E4F0;
+  --color-seat-avail:   #22C55E;
+  --color-seat-booked:  #EF4444;
+  --color-seat-reserved:#F59E0B;
+  --color-seat-selected:#3D3FD4;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(61,63,212,0.12);
+  --shadow-lg: 0 8px 32px rgba(61,63,212,0.18);
+}
+
+/* Dark Theme */
+[data-theme='dark'] {
+  --color-bg:           #0D0E1A;
+  --color-bg-card:      #1A1B2E;
+  --color-bg-nav:       #12133A;
+  --color-secondary:    #4F51E8;
+  --color-secondary-hover: #6163F0;
+  --color-accent:       #F5A623;
+  --color-accent-hover: #FFB947;
+  --color-text:         #E8E9FF;
+  --color-text-muted:   #8B8FA8;
+  --color-text-inv:     #FFFFFF;
+  --color-border:       #2A2B45;
+  --color-seat-avail:   #22C55E;
+  --color-seat-booked:  #EF4444;
+  --color-seat-reserved:#F59E0B;
+  --color-seat-selected:#6163F0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+p { color: var(--color-text-muted); }
+
+a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover { color: var(--color-secondary-hover); }
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--color-secondary);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(61,63,212,0.35);
+}
+.btn-primary:hover {
+  background: var(--color-secondary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(61,63,212,0.45);
+}
+
+.btn-accent {
+  background: var(--color-accent);
+  color: #1A1A2E;
+  box-shadow: 0 4px 14px rgba(245,166,35,0.35);
+}
+.btn-accent:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-secondary);
+  border: 2px solid var(--color-secondary);
+}
+.btn-outline:hover {
+  background: var(--color-secondary);
+  color: #fff;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.btn-ghost:hover {
+  background: var(--color-bg-card);
+}
+
+.btn-sm { padding: 8px 16px; font-size: 0.85rem; border-radius: 8px; }
+.btn-lg { padding: 16px 32px; font-size: 1.05rem; border-radius: 14px; }
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+.card {
+  background: var(--color-bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card:hover { box-shadow: var(--shadow-md); }
+.card-elevated { box-shadow: var(--shadow-md); }
+
+.card-body { padding: 24px; }
+.card-header { 
+  padding: 20px 24px; 
+  border-bottom: 1px solid var(--color-border); 
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-input {
+  padding: 12px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(61,63,212,0.12);
+}
+
+.form-input::placeholder { color: var(--color-text-muted); }
+
+select.form-input { cursor: pointer; }
+
+/* ============================================
+   BADGES
+   ============================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success { background: #dcfce7; color: #16a34a; }
+.badge-danger  { background: #fee2e2; color: #dc2626; }
+.badge-warning { background: #fef9c3; color: #ca8a04; }
+.badge-info    { background: #dbeafe; color: #2563eb; }
+
+[data-theme='dark'] .badge-success { background: #14532d33; color: #4ade80; }
+[data-theme='dark'] .badge-danger  { background: #7f1d1d33; color: #f87171; }
+[data-theme='dark'] .badge-warning { background: #78350f33; color: #fbbf24; }
+[data-theme='dark'] .badge-info    { background: #1e3a5f33; color: #60a5fa; }
+
+/* ============================================
+   LAYOUT UTILITIES
+   ============================================ */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.container-sm { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+.container-md { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+.page-wrapper {
+  min-height: 100vh;
+  padding-top: 72px; /* navbar height */
+}
+
+/* ============================================
+   SEAT MAP
+   ============================================ */
+.seat {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.seat-available {
+  background: var(--color-seat-avail);
+  color: #fff;
+  border-color: #16a34a;
+}
+.seat-available:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(34,197,94,0.4);
+}
+
+.seat-booked {
+  background: var(--color-seat-booked);
+  color: #fff;
+  border-color: #dc2626;
+  cursor: not-allowed;
+}
+
+.seat-reserved {
+  background: var(--color-seat-reserved);
+  color: #fff;
+  border-color: #d97706;
+  cursor: not-allowed;
+}
+
+.seat-selected {
+  background: var(--color-seat-selected);
+  color: #fff;
+  border-color: #2D2FB8;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(61,63,212,0.4);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(61,63,212,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(61,63,212,0); }
+}
+
+.fade-in   { animation: fadeIn 0.4s ease forwards; }
+.slide-up  { animation: slideUp 0.5s ease forwards; }
+
+/* ============================================
+   DIVIDER
+   ============================================ */
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 24px 0;
+}
+
+/* ============================================
+   LOADING SPINNER
+   ============================================ */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-secondary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================
+   ALERT / TOAST BANNERS
+   ============================================ */
+.alert {
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.alert-error   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+.alert-info    { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+
+[data-theme='dark'] .alert-success { background: #14532d33; border-color: #166534; color: #4ade80; }
+[data-theme='dark'] .alert-error   { background: #7f1d1d33; border-color: #991b1b; color: #f87171; }
+[data-theme='dark'] .alert-info    { background: #1e3a5f33; border-color: #1e40af; color: #60a5fa; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .container, .container-sm, .container-md {
+    padding: 0 16px;
+  }
+  .btn { padding: 10px 18px; font-size: 0.9rem; }
+  .seat { width: 36px; height: 36px; font-size: 0.6rem; }
+}
+
+@media (max-width: 480px) {
+  .seat { width: 30px; height: 30px; font-size: 0.55rem; border-radius: 6px; }
+}
