@@ -1,0 +1,102 @@
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
+
+const Profile = () => {
+    const { user, updateProfile } = useContext(AuthContext);
+    const [name, setName] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/login');
+        } else {
+            setName(user.name);
+        }
+    }, [user, navigate]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setMessage('');
+
+        if (password && password !== confirmPassword) {
+            return setError('Passwords do not match');
+        }
+
+        try {
+            await updateProfile(name, password);
+            setMessage('Profile updated successfully');
+            setPassword('');
+            setConfirmPassword('');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to update profile');
+        }
+    };
+
+    if (!user) return null;
+
+    return (
+        <div className="container" style={{ marginTop: '2rem' }}>
+            <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>User Profile Settings</h2>
+
+                {error && <div className="error-message" style={{ marginBottom: '1rem' }}>{error}</div>}
+                {message && <div style={{ color: 'var(--success-color)', marginBottom: '1rem', fontSize: '0.875rem' }}>{message}</div>}
+
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="form-label">Full Name</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Email Address (Read Only)</label>
+                        <input
+                            type="email"
+                            className="form-control"
+                            value={user.email}
+                            disabled
+                            style={{ backgroundColor: 'var(--bg-color)', cursor: 'not-allowed' }}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">New Password</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Leave blank to keep current password"
+                            minLength="6"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Confirm New Password</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="Confirm new password"
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">
+                        Update Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default Profile;
