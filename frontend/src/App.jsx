@@ -11,6 +11,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
 import Home from './pages/Home';
+import BookingSeatSelection from './pages/BookingSeatSelection';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/resetpassword/:token" element={<ResetPassword />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/book/:scheduleId" element={<BookingSeatSelection />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminDashboard />} />

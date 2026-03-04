@@ -13,6 +13,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
 
 app.get('/', (req, res) => {
   res.send('MERN Backend API is running');
