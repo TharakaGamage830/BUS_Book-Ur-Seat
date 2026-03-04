@@ -31,10 +31,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (name, email, password) => {
         const response = await api.post('/auth/register', { name, email, password });
-        if (response.data) {
-            localStorage.setItem('user', JSON.stringify(response.data));
-            setUser(response.data);
-        }
+        // Do not auto-login, wait for email verification
         return response.data;
     };
 

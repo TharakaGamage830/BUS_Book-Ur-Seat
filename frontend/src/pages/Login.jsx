@@ -55,8 +55,13 @@ const Login = () => {
                         Login
                     </button>
                 </form>
-                <div className="auth-footer">
-                    Don't have an account? <Link to="/register">Register here</Link>
+                <div className="auth-footer" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <p>
+                        Don't have an account? <Link to="/register">Register here</Link>
+                    </p>
+                    <p>
+                        <Link to="/forgot-password" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Forgot your password?</Link>
+                    </p>
                 </div>
             </div>
         </div>

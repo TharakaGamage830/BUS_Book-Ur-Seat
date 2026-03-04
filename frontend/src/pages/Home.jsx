@@ -14,13 +14,19 @@ const Home = () => {
                     <p style={styles.heroSubtitle}>
                         Experience seamless, reliable, and secure bus seat bookings. Choose your destination, pick your perfect seat, and travel with peace of mind.
                     </p>
-                    <div style={styles.heroAction}>
+                    <div className="animate-fade-in-up" style={{ ...styles.heroAction, animationDelay: '0.2s' }}>
                         <Link to="/login" className="btn btn-primary" style={styles.primaryBtn}>
                             Book Now <ArrowRight size={20} />
                         </Link>
                         <Link to="/register" className="btn btn-outline" style={styles.outlineBtn}>
                             Create Account
                         </Link>
+                    </div>
+
+                    <div className="search-mock animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                        <MapPin size={24} color="var(--text-secondary)" style={{ marginLeft: '1rem' }} />
+                        <input type="text" placeholder="Where do you want to go?" disabled />
+                        <button onClick={() => window.location.href = '/login'}>Search</button>
                     </div>
                 </div>
             </section>
@@ -30,25 +36,25 @@ const Home = () => {
                 <h2 style={styles.sectionTitle}>Why Choose Us?</h2>
                 <div style={styles.featuresGrid}>
 
-                    <div style={styles.featureCard}>
+                    <div style={styles.featureCard} className="feature-card-interactive">
                         <div style={styles.iconWrapper}><MapPin size={32} color="var(--primary-color)" /></div>
                         <h3>Countless Destinations</h3>
                         <p>Access an extensive network of routes and bus operators all across the country at your fingertips.</p>
                     </div>
 
-                    <div style={styles.featureCard}>
+                    <div style={styles.featureCard} className="feature-card-interactive">
                         <div style={styles.iconWrapper}><Bus size={32} color="var(--accent-color)" /></div>
                         <h3>Interactive Seat Mapping</h3>
                         <p>Know exactly where you'll sit before you board. Pick window or aisle seats easily using our live map.</p>
                     </div>
 
-                    <div style={styles.featureCard}>
+                    <div style={styles.featureCard} className="feature-card-interactive">
                         <div style={styles.iconWrapper}><CalendarCheck size={32} color="var(--success-color)" /></div>
                         <h3>Instant Booking</h3>
                         <p>Skip the queues. Your tickets are confirmed in less than 2 seconds, right on your device.</p>
                     </div>
 
-                    <div style={styles.featureCard}>
+                    <div style={styles.featureCard} className="feature-card-interactive">
                         <div style={styles.iconWrapper}><ShieldCheck size={32} color="var(--primary-color)" /></div>
                         <h3>Secure Verification</h3>
                         <p>Your data and payments are heavily encrypted. Book confidently knowing your information is safe.</p>

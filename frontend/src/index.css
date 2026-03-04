@@ -1,9 +1,9 @@
 /* Global Reset and Basic Tokens */
 :root {
   /* Default Light Theme (60:30:10 rule via vars) */
-  --bg-color: #f7f9fc;
+  --bg-color: #ecedf0;
   /* 60% Background */
-  --surface-color: #ffffff;
+  --surface-color: #f5f5f5;
   /* Secondary Background */
   --primary-color: #1e40af;
   /* 30% Primary */
@@ -228,4 +228,84 @@ a {
   .nav-links {
     gap: 0.75rem;
   }
+}
+
+/* Animations & Interactivity additions */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.feature-card-interactive {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+
+.feature-card-interactive:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: var(--primary-color);
+}
+
+.search-mock {
+  display: flex;
+  background: var(--surface-color);
+  padding: 0.5rem;
+  border-radius: 999px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  max-width: 600px;
+  margin: 2rem auto;
+  align-items: center;
+}
+
+.search-mock input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.search-mock button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.search-mock button:hover {
+  transform: scale(1.05);
+  background: var(--accent-color);
 }
