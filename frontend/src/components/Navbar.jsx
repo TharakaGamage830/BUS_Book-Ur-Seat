@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Moon, Sun, User, LogOut } from 'lucide-react';
+import { Moon, Sun, User, LogOut, Shield } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 import ThemeContext from '../context/ThemeContext';
 // Using the logo from public folder assuming we move or reference it correctly
@@ -33,6 +33,11 @@ const Navbar = () => {
 
                     {user ? (
                         <>
+                            {user.role === 'admin' && (
+                                <Link to="/admin" className="btn" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: 'var(--accent-color)', color: 'white' }}>
+                                    <Shield size={18} /> Admin
+                                </Link>
+                            )}
                             <Link to="/profile" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
                                 <User size={18} /> {user.name}
                             </Link>

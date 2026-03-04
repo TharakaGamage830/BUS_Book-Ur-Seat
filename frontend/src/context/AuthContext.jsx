@@ -12,9 +12,15 @@ export const AuthProvider = ({ children }) => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             try {
-                setUser(JSON.parse(storedUser));
+                // Check if the stored string is actually valid JSON
+                if (storedUser !== "undefined" && storedUser !== "null") {
+                    setUser(JSON.parse(storedUser));
+                } else {
+                    localStorage.removeItem('user');
+                }
             } catch (e) {
-                console.error("Error parsing stored user")
+                console.error("Error parsing stored user:", e);
+                localStorage.removeItem('user'); // Clear corrupted state
             }
         }
         setLoading(false);

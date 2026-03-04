@@ -12,6 +12,12 @@ import ResetPassword from './pages/ResetPassword';
 
 import Home from './pages/Home';
 
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageBuses from './pages/admin/ManageBuses';
+import ManageRoutes from './pages/admin/ManageRoutes';
+import ManageSchedules from './pages/admin/ManageSchedules';
+
 function App() {
   return (
     <ThemeProvider>
@@ -28,6 +34,12 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/resetpassword/:token" element={<ResetPassword />} />
                 <Route path="/profile" element={<Profile />} />
+
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/buses" element={<ManageBuses />} />
+                <Route path="/admin/routes" element={<ManageRoutes />} />
+                <Route path="/admin/schedules" element={<ManageSchedules />} />
               </Routes>
             </main>
           </div>
