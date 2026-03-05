@@ -32,8 +32,8 @@ const ForgotPassword = () => {
                 <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                     Enter your email address to receive a password reset link.
                 </p>
-                {message && <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success-color)', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1.5rem', border: '1px solid var(--success-color)' }}>{message}</div>}
-                {error && <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger-color)', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1.5rem', border: '1px solid var(--danger-color)' }}>{error}</div>}
+                {message && <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1.5rem', border: '1px solid var(--success)' }}>{message}</div>}
+                {error && <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1.5rem', border: '1px solid var(--danger)' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">

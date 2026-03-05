@@ -1,156 +1,192 @@
 import React, { useState, useEffect } from 'react';
-import { getRoutes, createRoute } from '../../api/admin';
-import { MapIcon, PlusCircle } from 'lucide-react';
+import { getRoutes, createRoute, updateRoute, deleteRoute, toggleRouteStatus } from '../../api/admin';
+import { MapPin, PlusCircle, Pencil, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
+
+const SL_CITIES = [
+    'Colombo', 'Kandy', 'Galle', 'Jaffna', 'Matara', 'Negombo', 'Trincomalee',
+    'Batticaloa', 'Anuradhapura', 'Polonnaruwa', 'Badulla', 'Ratnapura',
+    'Kurunegala', 'Puttalam', 'Ampara', 'Hambantota', 'Kalutara', 'Nuwara Eliya'
+];
+
+const emptyForm = { origin: '', destination: '', distance: '', estimatedDuration: '' };
 
 const ManageRoutes = () => {
-    const [routesList, setRoutesList] = useState([]);
+    const [routes, setRoutes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
-
-    // Form inputs
-    const [origin, setOrigin] = useState('');
-    const [destination, setDestination] = useState('');
-    const [distance, setDistance] = useState('');
-    const [estimatedDuration, setEstimatedDuration] = useState('');
+    const [form, setForm] = useState(emptyForm);
+    const [editId, setEditId] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
 
     const fetchRoutes = async () => {
         try {
             setLoading(true);
-            const data = await getRoutes();
-            setRoutesList(data);
+            setRoutes(await getRoutes());
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to fetch routes');
+            setError('Failed to load routes.');
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchRoutes();
-    }, []);
+    useEffect(() => { fetchRoutes(); }, []);
+
+    const showSuccess = (msg) => {
+        setSuccessMsg(msg);
+        setTimeout(() => setSuccessMsg(''), 3000);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccessMsg('');
-
+        setError(''); setSubmitting(true);
         try {
-            await createRoute({
-                origin,
-                destination,
-                distance: distance ? Number(distance) : null,
-                estimatedDuration
-            });
-            setSuccessMsg('Route added successfully');
-            setOrigin('');
-            setDestination('');
-            setDistance('');
-            setEstimatedDuration('');
-            fetchRoutes(); // refresh list
+            if (editId) {
+                await updateRoute(editId, form);
+                showSuccess('Route updated!');
+            } else {
+                await createRoute(form);
+                showSuccess('Route created!');
+            }
+            setForm(emptyForm);
+            setEditId(null);
+            fetchRoutes();
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create route');
+            setError(err.response?.data?.message || 'Operation failed.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleEdit = (route) => {
+        setEditId(route._id);
+        setForm({ origin: route.origin, destination: route.destination, distance: route.distance, estimatedDuration: route.estimatedDuration });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Delete this route?')) return;
+        try {
+            await deleteRoute(id);
+            showSuccess('Route deleted.');
+            fetchRoutes();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Delete failed.');
+        }
+    };
+
+    const handleToggle = async (route) => {
+        try {
+            const updated = await toggleRouteStatus(route._id);
+            setRoutes(prev => prev.map(r => r._id === route._id ? updated : r));
+            showSuccess(`Route ${updated.isActive ? 'activated' : 'deactivated'}.`);
+        } catch (err) {
+            setError('Toggle failed.');
         }
     };
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
-                <MapIcon size={32} color="var(--primary-color)" style={{ marginRight: '1rem' }} />
-                <h1 style={{ fontSize: '2rem', margin: 0 }}>Manage Routes</h1>
+        <div className="page-wrapper animate-fade-in">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+                <MapPin size={28} color="var(--accent)" />
+                <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-primary)' }}>Manage Routes</h1>
             </div>
 
-            {error && <div className="error-message" style={{ marginBottom: '1rem' }}>{error}</div>}
-            {successMsg && <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success-color)', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1rem', border: '1px solid var(--success-color)' }}>{successMsg}</div>}
+            {error && <div className="error-message"><AlertCircle size={16} /> {error}</div>}
+            {successMsg && <div className="success-message"><CheckCircle size={16} style={{ display: 'inline', marginRight: '0.4rem' }} />{successMsg}</div>}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem' }}>
-                {/* Add New Route Form */}
-                <div className="card">
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-                        <PlusCircle size={20} /> Add New Route
-                    </h2>
-                    <form onSubmit={handleSubmit}>
+            {/* ADD / EDIT SECTION */}
+            <div className="card" style={{ marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.05rem', fontWeight: '700', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <PlusCircle size={20} color="var(--accent)" />
+                    {editId ? 'Edit Route' : 'Add New Route'}
+                </h2>
+                <form onSubmit={handleSubmit}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                         <div className="form-group">
-                            <label className="form-label">Origin (Starting Point)</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="ex. New York"
-                                value={origin}
-                                onChange={(e) => setOrigin(e.target.value)}
-                                required
-                            />
+                            <label className="form-label">Origin City</label>
+                            <select className="form-control" value={form.origin} onChange={e => setForm({ ...form, origin: e.target.value })} required>
+                                <option value="">Select origin...</option>
+                                {SL_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Destination</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="ex. Washington DC"
-                                value={destination}
-                                onChange={(e) => setDestination(e.target.value)}
-                                required
-                            />
+                            <label className="form-label">Destination City</label>
+                            <select className="form-control" value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} required>
+                                <option value="">Select destination...</option>
+                                {SL_CITIES.filter(c => c !== form.origin).map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Distance (km)</label>
-                            <input
-                                type="number"
-                                className="form-control"
-                                placeholder="ex. 350"
-                                value={distance}
-                                onChange={(e) => setDistance(e.target.value)}
-                            />
+                            <input type="number" className="form-control" min="1" placeholder="e.g. 115" value={form.distance} onChange={e => setForm({ ...form, distance: e.target.value })} />
                         </div>
                         <div className="form-group">
                             <label className="form-label">Estimated Duration</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="ex. 4 hours"
-                                value={estimatedDuration}
-                                onChange={(e) => setEstimatedDuration(e.target.value)}
-                            />
+                            <input type="text" className="form-control" placeholder="e.g. 2h 30m" value={form.estimatedDuration} onChange={e => setForm({ ...form, estimatedDuration: e.target.value })} />
                         </div>
-                        <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Add Route</button>
-                    </form>
-                </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                        <button type="submit" className="btn btn-primary" disabled={submitting}>
+                            {submitting ? 'Saving...' : editId ? 'Update Route' : 'Add Route'}
+                        </button>
+                        {editId && <button type="button" className="btn btn-ghost" onClick={() => { setEditId(null); setForm(emptyForm); }}>Cancel</button>}
+                    </div>
+                </form>
+            </div>
 
-                {/* List of Routes */}
-                <div className="card">
-                    <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Active Routes</h2>
-                    {loading ? (
-                        <div>Loading...</div>
-                    ) : (
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                                        <th style={{ padding: '0.75rem' }}>Origin</th>
-                                        <th style={{ padding: '0.75rem' }}>Destination</th>
-                                        <th style={{ padding: '0.75rem' }}>Distance</th>
-                                        <th style={{ padding: '0.75rem' }}>Duration</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {routesList.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No routes found. Add one to get started.</td>
-                                        </tr>
-                                    ) : (
-                                        routesList.map(route => (
-                                            <tr key={route._id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                                <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>{route.origin}</td>
-                                                <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>{route.destination}</td>
-                                                <td style={{ padding: '0.75rem' }}>{route.distance ? `${route.distance} km` : 'N/A'}</td>
-                                                <td style={{ padding: '0.75rem' }}>{route.estimatedDuration || 'N/A'}</td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+            {/* Table */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ padding: '1.5rem 1.5rem 1rem', borderBottom: '1px solid var(--border)' }}>
+                    <h2 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                        Routes ({routes.length})
+                    </h2>
+                </div>
+                <div className="scrollable">
+                    <table className="data-table">
+                        <thead>
+                            <tr>
+                                <th>Route</th>
+                                <th>Distance</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Loading...</td></tr>
+                            ) : routes.length === 0 ? (
+                                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No routes yet. Add your first route.</td></tr>
+                            ) : routes.map(route => (
+                                <tr key={route._id} style={{ opacity: route.isActive ? 1 : 0.55 }}>
+                                    <td>
+                                        <div style={{ fontWeight: '700' }}>{route.origin}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>↓ {route.destination}</div>
+                                    </td>
+                                    <td>{route.distance ? `${route.distance} km` : '—'}</td>
+                                    <td>{route.estimatedDuration || '—'}</td>
+                                    <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                            <label className="toggle-switch">
+                                                <input type="checkbox" checked={route.isActive} onChange={() => handleToggle(route)} />
+                                                <span className="toggle-slider"></span>
+                                            </label>
+                                            <span style={{ fontSize: '0.8rem', color: route.isActive ? 'var(--success)' : 'var(--text-muted)', fontWeight: '600' }}>
+                                                {route.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button className="btn btn-ghost btn-sm" onClick={() => handleEdit(route)}><Pencil size={15} /></button>
+                                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(route._id)}><Trash2 size={15} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

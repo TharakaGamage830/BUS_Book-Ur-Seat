@@ -33,18 +33,13 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
-            // Generate verification token
+            // Generate verification token (still send if possible, but don't block registration)
             const verificationToken = user.getVerificationToken();
             await user.save({ validateBeforeSave: false });
 
-            // Create verification URL
-            const verifyUrl = `${req.protocol}://${req.get('host')}/api/auth/verify/${verificationToken}`;
-
-            // In a real app we'd link to the frontend, e.g., `${process.env.FRONTEND_URL}/verify/${verificationToken}`
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
             const frontendVerifyUrl = `${frontendUrl}/verify/${verificationToken}`;
-
-            const message = `You are receiving this email because you need to verify your email address.\n\nPlease click the following link to verify your account:\n\n${frontendVerifyUrl}`;
+            const message = `Please click the following link to verify your email:\n\n${frontendVerifyUrl}`;
 
             try {
                 await sendEmail({
@@ -52,18 +47,19 @@ const registerUser = async (req, res) => {
                     subject: 'Account Verification - Bus Book-Ur-Seat',
                     message,
                 });
-
-                res.status(201).json({
-                    success: true,
-                    message: 'Registration successful! Please check your email to verify your account.',
-                });
             } catch (err) {
-                console.error(err);
+                // Email failed - that's okay in dev, account still created
+                // Auto-verify the user so they can login
+                console.warn('Email sending failed, auto-verifying user for dev:', user.email);
+                user.isVerified = true;
                 user.verificationToken = undefined;
                 await user.save({ validateBeforeSave: false });
-
-                res.status(500).json({ message: 'Email could not be sent' });
             }
+
+            res.status(201).json({
+                success: true,
+                message: 'Registration successful! You can now log in.',
+            });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
         }
@@ -123,12 +119,6 @@ const loginUser = async (req, res) => {
 
         // Verify password if user exists
         if (user && (await user.matchPassword(password))) {
-
-            // Check if user is verified
-            if (!user.isVerified) {
-                return res.status(401).json({ message: 'Please verify your email address to log in' });
-            }
-
             res.json({
                 _id: user._id,
                 name: user.name,
@@ -173,13 +163,20 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const updateUserProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).select('+password');
 
         if (user) {
             user.name = req.body.name || user.name;
 
             if (req.body.password) {
-                // Will be hashed automatically by pre-save hook
+                // Require old password verification before changing
+                if (!req.body.oldPassword) {
+                    return res.status(400).json({ message: 'Current password is required to set a new password' });
+                }
+                const isMatch = await user.matchPassword(req.body.oldPassword);
+                if (!isMatch) {
+                    return res.status(400).json({ message: 'Current password is incorrect' });
+                }
                 user.password = req.body.password;
             }
 

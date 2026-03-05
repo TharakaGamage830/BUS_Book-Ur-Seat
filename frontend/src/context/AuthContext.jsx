@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
         const payload = { name };
         if (password) payload.password = password;
 
-        const response = await api.put('/user/profile', payload);
+        const response = await api.put('/auth/profile', payload);
         if (response.data) {
             localStorage.setItem('user', JSON.stringify(response.data));
             setUser(response.data);

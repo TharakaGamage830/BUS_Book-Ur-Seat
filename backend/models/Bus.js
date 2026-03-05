@@ -6,6 +6,12 @@ const busSchema = new mongoose.Schema({
         required: [true, 'Please add a bus number (e.g., WP-1234)'],
         unique: true,
     },
+    model: {
+        type: String, // e.g., "Isuzu MT", "Higer", "Fuso Rosa"
+    },
+    routeNo: {
+        type: String, // e.g., "EX 1-16"
+    },
     capacity: {
         type: Number,
         required: [true, 'Please add bus capacity'],

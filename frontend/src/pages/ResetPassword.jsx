@@ -51,7 +51,7 @@ const ResetPassword = () => {
         return (
             <div className="auth-container">
                 <div className="card auth-card" style={{ textAlign: 'center' }}>
-                    <h2 style={{ color: 'var(--success-color)' }}>Success!</h2>
+                    <h2 style={{ color: 'var(--success)' }}>Success!</h2>
                     <p style={{ margin: '1.5rem 0', color: 'var(--text-secondary)' }}>
                         {message}
                     </p>
@@ -73,7 +73,7 @@ const ResetPassword = () => {
                 <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                     Please enter your new password below.
                 </p>
-                {error && <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger-color)', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1.5rem', border: '1px solid var(--danger-color)' }}>{error}</div>}
+                {error && <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '1rem', borderRadius: '0.375rem', marginBottom: '1.5rem', border: '1px solid var(--danger)' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">

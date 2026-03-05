@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config({ path: '../.env' }); // Re-use the root .env
+require('dotenv').config({ path: '../.env' }); // Load root .env
 
 const app = express();
 const PORT = process.env.PORT || 5000;

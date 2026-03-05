@@ -1,243 +1,195 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Bus, CalendarCheck, ShieldCheck, MapPin, ArrowRight, Search, Clock } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { MapPin, Search, Clock, Calendar, ArrowRight, Bus, Shield, Zap, Armchair, Lock } from 'lucide-react';
 import { searchSchedules } from '../api/booking';
+import AuthContext from '../context/AuthContext';
+
+const SL_CITIES = ['Colombo', 'Kandy', 'Galle', 'Jaffna', 'Matara', 'Negombo', 'Trincomalee', 'Batticaloa', 'Anuradhapura', 'Badulla', 'Nuwara Eliya', 'Kurunegala'];
 
 const Home = () => {
     const navigate = useNavigate();
-    const [origin, setOrigin] = useState('');
-    const [destination, setDestination] = useState('');
-    const [date, setDate] = useState('');
-
+    const { user } = useContext(AuthContext);
+    const [searchParams, setSearchParams] = useState({ origin: '', destination: '', date: '' });
     const [schedules, setSchedules] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [hasSearched, setHasSearched] = useState(false);
 
-    // Initial load of all active schedules
+    // Logged-in users: redirect to their dashboard
     useEffect(() => {
-        handleSearch();
-    }, []);
+        if (user) {
+            navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+        }
+    }, [user, navigate]);
+
+    useEffect(() => { loadAll(); }, []);
+
+    const loadAll = async () => {
+        setLoading(true);
+        try { setSchedules(await searchSchedules({})); }
+        catch (e) { console.error(e); }
+        finally { setLoading(false); }
+    };
 
     const handleSearch = async (e) => {
-        if (e) e.preventDefault();
+        e.preventDefault();
         setLoading(true);
-        try {
-            const data = await searchSchedules({ origin, destination, date });
-            setSchedules(data);
-            if (e) setHasSearched(true);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
+        try { setSchedules(await searchSchedules(searchParams)); setHasSearched(true); }
+        catch (e) { console.error(e); }
+        finally { setLoading(false); }
     };
 
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
+    // Don't render if user is logged in (will redirect)
+    if (user) return null;
 
     return (
-        <div style={styles.container}>
-            {/* Hero Section */}
-            <section style={styles.heroSection}>
-                <div style={styles.heroContent}>
-                    <h1 style={styles.heroTitle}>
-                        Your Journey Begins With <span style={{ color: 'var(--accent-color)' }}>Comfort</span>
+        <div style={{ width: '100%' }}>
+            {/* HERO */}
+            <section className="hero-section" style={{ padding: '3.5rem 1.25rem 2.5rem', textAlign: 'center' }}>
+                <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+                    <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: '800', color: '#fff', marginBottom: '0.75rem', lineHeight: 1.2 }}>
+                        Book Your Bus Seat Across <span style={{ color: '#FBBF24' }}>Sri Lanka</span>
                     </h1>
-                    <p style={styles.heroSubtitle}>
-                        Experience seamless, reliable, and secure bus seat bookings. Choose your destination, pick your perfect seat, and travel with peace of mind.
+                    <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.8)', marginBottom: '2rem' }}>
+                        Colombo to Kandy, Galle to Jaffna — find and reserve seats instantly.
                     </p>
-
-                    <form onSubmit={handleSearch} className="search-mock animate-fade-in-up" style={{ animationDelay: '0.2s', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', backgroundColor: 'var(--surface-color)', padding: '0.5rem', borderRadius: '9999px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '150px', padding: '0 1rem', borderRight: '1px solid var(--border-color)' }}>
-                            <MapPin size={20} color="var(--primary-color)" />
-                            <input
-                                type="text"
-                                placeholder="Leaving from..."
-                                value={origin}
-                                onChange={(e) => setOrigin(e.target.value)}
-                                style={{ border: 'none', background: 'transparent', outline: 'none', padding: '0.5rem', width: '100%', color: 'var(--text-primary)' }}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '150px', padding: '0 1rem', borderRight: '1px solid var(--border-color)' }}>
-                            <MapPin size={20} color="var(--accent-color)" />
-                            <input
-                                type="text"
-                                placeholder="Going to..."
-                                value={destination}
-                                onChange={(e) => setDestination(e.target.value)}
-                                style={{ border: 'none', background: 'transparent', outline: 'none', padding: '0.5rem', width: '100%', color: 'var(--text-primary)' }}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '150px', padding: '0 1rem' }}>
-                            <CalendarCheck size={20} color="var(--success-color)" />
-                            <input
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                style={{ border: 'none', background: 'transparent', outline: 'none', padding: '0.5rem', width: '100%', color: 'var(--text-secondary)' }}
-                            />
-                        </div>
-                        <button type="submit" className="btn btn-primary" style={{ borderRadius: '9999px', padding: '0.75rem 2rem', fontWeight: 'bold' }}>
-                            <Search size={20} style={{ marginRight: '0.5rem' }} /> Search
-                        </button>
-                    </form>
                 </div>
             </section>
 
-            {/* Search Results Section */}
-            <section style={{ maxWidth: '1000px', margin: '0 auto', padding: '4rem 2rem' }}>
-                <h2 style={{ fontSize: '2rem', marginBottom: '2rem', color: 'var(--text-primary)', borderBottom: '2px solid var(--primary-color)', display: 'inline-block', paddingBottom: '0.5rem' }}>
-                    Available Schedules
-                </h2>
+            {/* SEARCH CARD */}
+            <div style={{ maxWidth: 'var(--max-width)', margin: '-2rem auto 0', padding: '0 1.25rem', position: 'relative', zIndex: 2 }}>
+                <div className="card" style={{ padding: '1.5rem 1.75rem' }}>
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1.25rem', color: 'var(--text-primary)' }}>Search your next journey</h2>
+                    <form onSubmit={handleSearch}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
+                            <div style={{ flex: '1 1 180px' }}>
+                                <label className="form-label"><MapPin size={12} style={{ display: 'inline', marginRight: '0.2rem', verticalAlign: 'middle' }} /> Origin</label>
+                                <input type="text" className="form-control" list="from-cities" placeholder="e.g. Colombo" value={searchParams.origin} onChange={e => setSearchParams({ ...searchParams, origin: e.target.value })} />
+                                <datalist id="from-cities">{SL_CITIES.map(c => <option key={c} value={c} />)}</datalist>
+                            </div>
+                            <div style={{ flex: '1 1 180px' }}>
+                                <label className="form-label"><MapPin size={12} style={{ display: 'inline', marginRight: '0.2rem', verticalAlign: 'middle' }} /> Destination</label>
+                                <input type="text" className="form-control" list="to-cities" placeholder="e.g. Kandy" value={searchParams.destination} onChange={e => setSearchParams({ ...searchParams, destination: e.target.value })} />
+                                <datalist id="to-cities">{SL_CITIES.map(c => <option key={c} value={c} />)}</datalist>
+                            </div>
+                            <div style={{ flex: '1 1 160px' }}>
+                                <label className="form-label"><Calendar size={12} style={{ display: 'inline', marginRight: '0.2rem', verticalAlign: 'middle' }} /> Travel Date</label>
+                                <input type="date" className="form-control" value={searchParams.date} onChange={e => setSearchParams({ ...searchParams, date: e.target.value })} />
+                            </div>
+                            <button type="submit" className="btn btn-primary btn-lg" style={{ flexShrink: 0 }}>
+                                <Search size={16} /> Find Buses
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {/* RESULTS — Guest: no prices */}
+            <section style={{ maxWidth: 'var(--max-width)', margin: '0 auto', padding: '2rem 1.25rem 3rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <h2 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                        {hasSearched ? `Available Buses (${schedules.length})` : 'Available Buses'}
+                    </h2>
+                    {hasSearched && (
+                        <button className="btn btn-ghost btn-sm" onClick={() => { setSearchParams({ origin: '', destination: '', date: '' }); setHasSearched(false); loadAll(); }}>
+                            Clear search
+                        </button>
+                    )}
+                </div>
 
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Searching for routes...</div>
-                ) : schedules.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        {schedules.map(schedule => (
-                            <div key={schedule._id} className="card feature-card-interactive" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-                                <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                                        <h3 style={{ fontSize: '1.5rem', color: 'var(--primary-color)', margin: 0 }}>
-                                            {schedule.route.origin} <ArrowRight size={20} style={{ verticalAlign: 'middle', margin: '0 0.5rem' }} /> {schedule.route.destination}
-                                        </h3>
-                                        <span style={{ backgroundColor: 'rgba(56, 189, 248, 0.1)', color: 'var(--primary-color)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.875rem', fontWeight: 'bold' }}>
-                                            {schedule.bus.type} Bus
-                                        </span>
+                    <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                        <Bus size={32} style={{ margin: '0 auto 0.5rem', display: 'block', animation: 'pulse 1.5s infinite', opacity: 0.4 }} />
+                        <p>Finding available buses...</p>
+                    </div>
+                ) : schedules.length === 0 ? (
+                    <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+                        <MapPin size={40} color="var(--border-strong)" style={{ margin: '0 auto 0.75rem', display: 'block' }} />
+                        <h3 style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '0.35rem' }}>No buses found</h3>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Try different cities or a different date.</p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                        {schedules.map((s, i) => (
+                            <div key={s._id} className="card animate-fade-in" style={{ padding: '1.25rem 1.5rem', borderLeft: '4px solid var(--primary)', animationDelay: `${i * 0.04}s`, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ flex: '1 1 300px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem', flexWrap: 'wrap' }}>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>BUS {s.bus?.busNumber}</span>
+                                        <span className="badge badge-primary" style={{ fontSize: '0.65rem' }}>{s.bus?.type}</span>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: 'var(--text-secondary)' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Clock size={16} /> {formatDate(schedule.departureTime)}</span>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Bus size={16} /> {schedule.bus.busNumber}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.35rem 0' }}>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: '1.15rem', fontWeight: '800' }}>{new Date(s.departureTime).toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' })}</div>
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{s.route?.origin}</div>
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 0.5rem', minWidth: '80px' }}>
+                                            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>{s.route?.estimatedDuration || 'Direct'}</div>
+                                            <div style={{ width: '100%', height: '2px', background: 'var(--border)', position: 'relative' }}>
+                                                <div style={{ position: 'absolute', left: 0, top: '-3px', width: '8px', height: '8px', borderRadius: '50%', border: '2px solid var(--border-strong)', background: 'var(--surface)' }} />
+                                                <div style={{ position: 'absolute', right: 0, top: '-3px', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)' }} />
+                                            </div>
+                                            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Direct</div>
+                                        </div>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: '1.15rem', fontWeight: '800' }}>{new Date(s.arrivalTime).toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' })}</div>
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{s.route?.destination}</div>
+                                        </div>
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem' }}>
+                                        <Calendar size={11} /> {new Date(s.departureTime).toLocaleDateString('en-LK', { dateStyle: 'medium' })}
                                     </div>
                                 </div>
 
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--success-color)', marginBottom: '0.5rem' }}>
-                                        ${schedule.price}
+                                {/* Price hidden for guests */}
+                                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                        <Lock size={14} />
+                                        <span style={{ fontStyle: 'italic' }}>Sign in to see price</span>
                                     </div>
-                                    <button
-                                        onClick={() => navigate(`/book/${schedule._id}`)}
-                                        className="btn btn-primary"
-                                    >
-                                        View Seats
-                                    </button>
+                                    <Link to="/login" className="btn btn-accent btn-sm">Sign In to Book</Link>
                                 </div>
                             </div>
                         ))}
                     </div>
-                ) : (
-                    <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: 'var(--surface-color)', borderRadius: '1rem', border: '1px dashed var(--border-color)' }}>
-                        <MapPin size={48} color="var(--text-secondary)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                        <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>No routes found</h3>
-                        <p style={{ color: 'var(--text-secondary)' }}>Try adjusting your search criteria or date.</p>
-                    </div>
                 )}
             </section>
 
-            {/* Features Section */}
-            <section style={styles.featuresSection}>
-                <h2 style={styles.sectionTitle}>Why Choose Us?</h2>
-                <div style={styles.featuresGrid}>
-
-                    <div style={styles.featureCard} className="feature-card-interactive">
-                        <div style={styles.iconWrapper}><MapPin size={32} color="var(--primary-color)" /></div>
-                        <h3>Countless Destinations</h3>
-                        <p>Access an extensive network of routes and bus operators all across the country at your fingertips.</p>
+            {/* FEATURES */}
+            <section style={{ background: 'var(--section-bg)', padding: '3.5rem 1.25rem' }}>
+                <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto', textAlign: 'center' }}>
+                    <h2 style={{ fontSize: '1.6rem', fontWeight: '800', marginBottom: '2.5rem', color: 'var(--text-primary)' }}>Why Choose Us?</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
+                        {[
+                            { icon: <MapPin size={24} />, color: 'var(--primary)', title: 'Island-Wide Coverage', desc: 'Routes spanning Colombo to Jaffna, Galle to Trincomalee.' },
+                            { icon: <Armchair size={24} />, color: 'var(--accent)', title: 'Live Seat Map', desc: 'See available seats and pick your favourite before boarding.' },
+                            { icon: <Zap size={24} />, color: 'var(--success)', title: 'Instant Confirmation', desc: 'Skip the bus stand queue. Your ticket is confirmed in seconds.' },
+                            { icon: <Shield size={24} />, color: '#8B5CF6', title: 'Secure Booking', desc: 'Data protected with modern encryption and authentication.' },
+                        ].map((f, i) => (
+                            <div key={i} className="card feature-card-interactive" style={{ padding: '1.75rem 1.25rem', textAlign: 'center' }}>
+                                <div style={{ width: '50px', height: '50px', borderRadius: 'var(--radius-md)', background: `${f.color}11`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: f.color }}>{f.icon}</div>
+                                <h3 style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '0.4rem' }}>{f.title}</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+                            </div>
+                        ))}
                     </div>
-
-                    <div style={styles.featureCard} className="feature-card-interactive">
-                        <div style={styles.iconWrapper}><Bus size={32} color="var(--accent-color)" /></div>
-                        <h3>Interactive Seat Mapping</h3>
-                        <p>Know exactly where you'll sit before you board. Pick window or aisle seats easily using our live map.</p>
-                    </div>
-
-                    <div style={styles.featureCard} className="feature-card-interactive">
-                        <div style={styles.iconWrapper}><CalendarCheck size={32} color="var(--success-color)" /></div>
-                        <h3>Instant Booking</h3>
-                        <p>Skip the queues. Your tickets are confirmed in less than 2 seconds, right on your device.</p>
-                    </div>
-
-                    <div style={styles.featureCard} className="feature-card-interactive">
-                        <div style={styles.iconWrapper}><ShieldCheck size={32} color="var(--primary-color)" /></div>
-                        <h3>Secure Verification</h3>
-                        <p>Your data and payments are heavily encrypted. Book confidently knowing your information is safe.</p>
-                    </div>
-
                 </div>
             </section>
+
+            {/* FOOTER */}
+            <footer style={{ borderTop: '1px solid var(--border)', padding: '1.75rem 1.25rem', textAlign: 'center' }}>
+                <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                    <span style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Bus size={16} /> BUS Book-Ur-Seat
+                    </span>
+                    <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        <a href="#" style={{ color: 'inherit' }}>Privacy Policy</a>
+                        <a href="#" style={{ color: 'inherit' }}>Terms of Service</a>
+                        <a href="#" style={{ color: 'inherit' }}>Contact Us</a>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>&copy; 2026 BUS. All rights reserved.</span>
+                </div>
+            </footer>
         </div>
     );
-};
-
-// Inline styles leveraging the 60:30:10 theme variables injected by index.css
-const styles = {
-    container: {
-        width: '100%',
-    },
-    heroSection: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '6rem 2rem',
-        background: 'linear-gradient(135deg, var(--bg-color) 0%, var(--surface-color) 100%)',
-        borderBottom: '1px solid var(--border-color)',
-        textAlign: 'center'
-    },
-    heroContent: {
-        maxWidth: '1000px',
-        width: '100%',
-    },
-    heroTitle: {
-        fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-        fontWeight: '800',
-        color: 'var(--text-primary)',
-        marginBottom: '1.5rem',
-        lineHeight: '1.2'
-    },
-    heroSubtitle: {
-        fontSize: '1.25rem',
-        color: 'var(--text-secondary)',
-        marginBottom: '2.5rem',
-        lineHeight: '1.6'
-    },
-    featuresSection: {
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '2rem 2rem 5rem 2rem',
-    },
-    sectionTitle: {
-        textAlign: 'center',
-        fontSize: '2.5rem',
-        fontWeight: '700',
-        color: 'var(--text-primary)',
-        marginBottom: '3.5rem'
-    },
-    featuresGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        gap: '2.5rem',
-    },
-    featureCard: {
-        backgroundColor: 'var(--surface-color)',
-        padding: '2.5rem 1.5rem',
-        borderRadius: '1rem',
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-        border: '1px solid var(--border-color)',
-        textAlign: 'center',
-        transition: 'transform 0.3s ease',
-    },
-    iconWrapper: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '64px',
-        height: '64px',
-        borderRadius: '50%',
-        backgroundColor: 'var(--bg-color)',
-        margin: '0 auto 1.5rem auto'
-    }
 };
 
 export default Home;

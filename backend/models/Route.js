@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const routeSchema = new mongoose.Schema({
+    routeNo: {
+        type: String, // e.g., "EX 1-16"
+        unique: true,
+    },
     origin: {
         type: String,
         required: [true, 'Please add a starting point / origin'],

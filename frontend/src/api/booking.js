@@ -25,3 +25,9 @@ export const getMyBookings = async () => {
     const { data } = await api.get('/bookings/mybookings');
     return data;
 };
+
+// Cancel user's own booking
+export const cancelMyBooking = async (bookingId) => {
+    const { data } = await api.put(`/bookings/${bookingId}/cancel`);
+    return data;
+};

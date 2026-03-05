@@ -33,8 +33,8 @@ const VerifyEmail = () => {
 
                 <div style={{ margin: '2rem 0', display: 'flex', justifyContent: 'center' }}>
                     {status === 'loading' && <div className="spinner">Verifying...</div>}
-                    {status === 'success' && <CheckCircle size={64} color="var(--success-color)" />}
-                    {status === 'error' && <XCircle size={64} color="var(--danger-color)" />}
+                    {status === 'success' && <CheckCircle size={64} color="var(--success)" />}
+                    {status === 'error' && <XCircle size={64} color="var(--danger)" />}
                 </div>
 
                 {status !== 'loading' && (
@@ -50,7 +50,7 @@ const VerifyEmail = () => {
                 )}
 
                 {status === 'error' && (
-                    <Link to="/" className="btn btn-outline" style={{ display: 'inline-block', marginTop: '1rem', border: '1px solid var(--border-color)', padding: '0.75rem 1.5rem', borderRadius: '0.375rem', color: 'var(--text-primary)' }}>
+                    <Link to="/" className="btn btn-outline" style={{ display: 'inline-block', marginTop: '1rem', border: '1px solid var(--border)', padding: '0.75rem 1.5rem', borderRadius: '0.375rem', color: 'var(--text-primary)' }}>
                         Back to Home
                     </Link>
                 )}

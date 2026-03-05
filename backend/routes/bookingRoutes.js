@@ -5,7 +5,8 @@ const {
     getActiveSchedules,
     getBookedSeats,
     createBooking,
-    getMyBookings
+    getMyBookings,
+    cancelMyBooking
 } = require('../controllers/bookingController');
 
 // Public routes
@@ -16,5 +17,6 @@ router.get('/schedules/:id/seats', getBookedSeats);
 router.use(protect);
 router.post('/', createBooking);
 router.get('/mybookings', getMyBookings);
+router.put('/:id/cancel', cancelMyBooking);
 
 module.exports = router;
