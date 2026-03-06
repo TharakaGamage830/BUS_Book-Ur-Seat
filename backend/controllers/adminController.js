@@ -11,10 +11,10 @@ const Booking = require('../models/Booking');
 // @route   POST /api/admin/buses
 const createBus = async (req, res) => {
     try {
-        const { busNumber, capacity, type, model, routeNo } = req.body;
+        const { busNumber, capacity, type, model, routeNo, layoutParams, layout } = req.body;
         const busExists = await Bus.findOne({ busNumber });
         if (busExists) return res.status(400).json({ message: 'Bus number already exists' });
-        const bus = await Bus.create({ busNumber, capacity, type, model, routeNo });
+        const bus = await Bus.create({ busNumber, capacity, type, model, routeNo, layoutParams, layout });
         res.status(201).json(bus);
     } catch (error) {
         console.error(error);
@@ -66,9 +66,13 @@ const toggleBusStatus = async (req, res) => {
     try {
         const bus = await Bus.findById(req.params.id);
         if (!bus) return res.status(404).json({ message: 'Bus not found' });
-        bus.isActive = !bus.isActive;
-        await bus.save();
-        res.json(bus);
+
+        const updatedBus = await Bus.findByIdAndUpdate(
+            req.params.id,
+            { isActive: !bus.isActive },
+            { new: true }
+        );
+        res.json(updatedBus);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
@@ -138,9 +142,13 @@ const toggleRouteStatus = async (req, res) => {
     try {
         const route = await Route.findById(req.params.id);
         if (!route) return res.status(404).json({ message: 'Route not found' });
-        route.isActive = !route.isActive;
-        await route.save();
-        res.json(route);
+
+        const updatedRoute = await Route.findByIdAndUpdate(
+            req.params.id,
+            { isActive: !route.isActive },
+            { new: true }
+        );
+        res.json(updatedRoute);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });

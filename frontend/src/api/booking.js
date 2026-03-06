@@ -31,3 +31,15 @@ export const cancelMyBooking = async (bookingId) => {
     const { data } = await api.put(`/bookings/${bookingId}/cancel`);
     return data;
 };
+
+// Confirm participation for past trips
+export const confirmParticipation = async (bookingId) => {
+    const { data } = await api.put(`/bookings/${bookingId}/participate`);
+    return data;
+};
+
+// Rate a completed trip (1-5)
+export const submitRating = async (bookingId, rating) => {
+    const { data } = await api.put(`/bookings/${bookingId}/rate`, { rating });
+    return data;
+};

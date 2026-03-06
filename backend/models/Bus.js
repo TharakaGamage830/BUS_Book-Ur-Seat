@@ -19,8 +19,17 @@ const busSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['AC', 'Non-AC', 'Luxury', 'Sleeper'],
-        default: 'AC',
+        enum: ['Normal (Non AC)', 'Semi Luxury (Non AC)', 'Luxury (AC)', 'Super Luxury (AC)'],
+        default: 'Normal (Non AC)',
+    },
+    layoutParams: {
+        backRowSeats: { type: Number, default: 5 },
+        leftRowSeats: { type: Number, default: 2 },
+        rightRowSeats: { type: Number, default: 2 },
+    },
+    layout: {
+        type: Array, // Stores the exact customized layout saved by admin
+        default: [],
     },
     isActive: {
         type: Boolean,

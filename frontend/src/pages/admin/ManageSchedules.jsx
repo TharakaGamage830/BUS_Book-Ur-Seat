@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSchedules, createSchedule, deleteSchedule, getBuses, getRoutes, getScheduleSeats } from '../../api/admin';
-import { Clock, PlusCircle, Trash2, AlertCircle, CheckCircle, Armchair, X } from 'lucide-react';
-import { generateSeatLayout } from './ManageBuses';
+import { Clock, PlusCircle, Trash2, AlertCircle, CheckCircle, Armchair, X, History } from 'lucide-react';
+import { generateDynamicLayout } from './ManageBuses';
 
 const ManageSchedules = () => {
     const [schedules, setSchedules] = useState([]);
@@ -13,6 +13,7 @@ const ManageSchedules = () => {
     const [submitting, setSubmitting] = useState(false);
 
     const [form, setForm] = useState({ bus: '', route: '', departureTime: '', arrivalTime: '', price: '' });
+    const [viewMode, setViewMode] = useState('active'); // 'active' or 'history'
 
     // Seat View Modal State
     const [showSeatModal, setShowSeatModal] = useState(false);
@@ -82,6 +83,13 @@ const ManageSchedules = () => {
 
     const formatDate = (d) => d ? new Date(d).toLocaleString('en-LK', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
+    // Partition schedules
+    const now = new Date();
+    const activeSchedules = schedules.filter(s => new Date(s.arrivalTime) > now);
+    const historySchedules = schedules.filter(s => new Date(s.arrivalTime) <= now);
+
+    const displayedSchedules = viewMode === 'active' ? activeSchedules : historySchedules;
+
     return (
         <div className="page-wrapper animate-fade-in">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
@@ -134,16 +142,42 @@ const ManageSchedules = () => {
 
             {/* Table */}
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <div style={{ padding: '1.5rem 1.5rem 1rem', borderBottom: '1px solid var(--border)' }}>
-                    <h2 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-primary)' }}>Schedules ({schedules.length})</h2>
+                <div style={{ padding: '0 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                    {/* View Mode Tabs */}
+                    <div style={{ display: 'flex', gap: '2rem' }}>
+                        <button
+                            onClick={() => setViewMode('active')}
+                            style={{
+                                background: 'none', border: 'none', padding: '1.25rem 0',
+                                fontWeight: '700', fontSize: '1rem', cursor: 'pointer',
+                                color: viewMode === 'active' ? 'var(--primary)' : 'var(--text-muted)',
+                                borderBottom: viewMode === 'active' ? '3px solid var(--primary)' : '3px solid transparent'
+                            }}
+                        >
+                            Active Schedules ({activeSchedules.length})
+                        </button>
+                        <button
+                            onClick={() => setViewMode('history')}
+                            style={{
+                                background: 'none', border: 'none', padding: '1.25rem 0',
+                                fontWeight: '700', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                color: viewMode === 'history' ? 'var(--text-primary)' : 'var(--text-muted)',
+                                borderBottom: viewMode === 'history' ? '3px solid var(--text-primary)' : '3px solid transparent'
+                            }}
+                        >
+                            <History size={16} /> History ({historySchedules.length})
+                        </button>
+                    </div>
+
                 </div>
-                <div className="scrollable">
+                <div className="table-responsive">
                     <table className="data-table">
                         <thead>
                             <tr>
                                 <th>Route</th>
                                 <th>Bus</th>
-                                <th>Departure</th>
+                                <th>Departure & Arrival</th>
                                 <th>Price (LKR)</th>
                                 <th>Status</th>
                                 <th>Action</th>
@@ -152,19 +186,22 @@ const ManageSchedules = () => {
                         <tbody>
                             {loading ? (
                                 <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Loading...</td></tr>
-                            ) : schedules.length === 0 ? (
-                                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No schedules yet.</td></tr>
-                            ) : schedules.map(s => (
+                            ) : displayedSchedules.length === 0 ? (
+                                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No schedules found.</td></tr>
+                            ) : displayedSchedules.map(s => (
                                 <tr key={s._id}>
                                     <td>
                                         <div style={{ fontWeight: '600' }}>{s.route?.origin} → {s.route?.destination}</div>
                                     </td>
                                     <td style={{ fontSize: '0.875rem' }}>{s.bus?.busNumber}</td>
-                                    <td style={{ fontSize: '0.875rem' }}>{formatDate(s.departureTime)}</td>
+                                    <td style={{ fontSize: '0.875rem' }}>
+                                        <div style={{ fontWeight: 600 }}>D: {formatDate(s.departureTime)}</div>
+                                        <div style={{ color: 'var(--text-muted)' }}>A: {formatDate(s.arrivalTime)}</div>
+                                    </td>
                                     <td style={{ fontWeight: '700', color: 'var(--success)' }}>Rs. {Number(s.price).toLocaleString('en-LK')}</td>
                                     <td>
-                                        <span className={`badge badge-${s.status === 'scheduled' ? 'primary' : 'success'}`}>
-                                            {s.status}
+                                        <span className={`badge badge-${viewMode === 'active' ? 'primary' : 'light'}`}>
+                                            {viewMode === 'active' ? s.status : 'history'}
                                         </span>
                                     </td>
                                     <td style={{ display: 'flex', gap: '0.5rem' }}>
@@ -184,13 +221,13 @@ const ManageSchedules = () => {
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
                     backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
                 }}>
-                    <div className="card" onClick={e => e.stopPropagation()} style={{ width: '90%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', padding: '2rem' }}>
+                    <div className="card" onClick={e => e.stopPropagation()} style={{ width: '90%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto', position: 'relative', padding: '2rem' }}>
                         <button onClick={() => setShowSeatModal(false)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
                             <X size={24} />
                         </button>
 
                         <h2 style={{ fontSize: '1.25rem', fontWeight: '800', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Armchair size={24} color="var(--primary)" /> Seat Map Preview
+                            <Armchair size={24} color="var(--primary)" /> Seat Map Overview
                         </h2>
 
                         {seatLoading ? (
@@ -198,96 +235,107 @@ const ManageSchedules = () => {
                         ) : !seatData ? (
                             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--border)' }}>Failed to load data.</div>
                         ) : (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', alignItems: 'start' }}>
-                                {/* Left Side: Seat Grid */}
-                                <div style={{ background: 'var(--bg-color)', padding: '2rem', borderRadius: 'var(--radius-lg)', border: '2px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ padding: '0 0.5rem' }}>
+                                <div className="grid-sidebar">
+                                    {/* Left Side: Seat Grid */}
+                                    <div style={{ background: 'var(--bg-color)', padding: '2rem', borderRadius: 'var(--radius-lg)', border: '2px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-                                    {/* Legend */}
-                                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', fontSize: '0.85rem', fontWeight: '600' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                            <div style={{ width: 16, height: 16, borderRadius: 4, background: 'var(--success)' }}></div> Available
+                                        {/* Legend */}
+                                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', fontSize: '0.85rem', fontWeight: '600' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <div style={{ width: 16, height: 16, borderRadius: 4, background: 'var(--success)' }}></div> Available
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <div style={{ width: 16, height: 16, borderRadius: 4, background: 'var(--danger)' }}></div> Booked
+                                            </div>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                            <div style={{ width: 16, height: 16, borderRadius: 4, background: 'var(--danger)' }}></div> Booked
+
+                                        {/* Steering Wheel Indicator */}
+                                        <div style={{ width: '100%', maxWidth: '280px', display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem', paddingRight: '1rem' }}>
+                                            <div style={{ padding: '0.4rem', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text-muted)' }}>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="2"></circle><line x1="12" y1="2" x2="12" y2="12"></line><line x1="12" y1="12" x2="22" y2="12"></line><line x1="12" y1="12" x2="5" y2="19"></line></svg>
+                                            </div>
                                         </div>
+
+                                        {/* Grid */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', borderTop: '2px dashed var(--border)', paddingTop: '1.5rem', width: '100%' }}>
+                                            {(() => {
+                                                const busProps = seatData.schedule?.bus || {};
+                                                // Prioritize exact saved layout, fallback to generating it matching capacity/params
+                                                const layoutToRender = (busProps.layout && busProps.layout.length > 0)
+                                                    ? busProps.layout
+                                                    : generateDynamicLayout(busProps.capacity || 40, busProps.layoutParams);
+
+                                                return layoutToRender.map((row, rowIndex) => {
+                                                    const SeatTag = ({ seatObj }) => {
+                                                        if (!seatObj || seatObj.num === null) {
+                                                            return <div style={{ width: '40px', height: '40px', visibility: 'hidden' }} />;
+                                                        }
+                                                        const isBooked = seatData.bookedSeats.includes(seatObj.num);
+                                                        return (
+                                                            <div style={{
+                                                                width: '40px', height: '40px', borderRadius: 'var(--radius-sm)',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                fontSize: '0.875rem', fontWeight: '700', color: 'white',
+                                                                background: isBooked ? 'var(--danger)' : 'var(--success)',
+                                                                boxShadow: 'inset 0 -3px 0 rgba(0,0,0,0.1)'
+                                                            }}>
+                                                                {seatObj.num}
+                                                            </div>
+                                                        );
+                                                    };
+
+                                                    if (row.isBack) {
+                                                        return (
+                                                            <div key={rowIndex} style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border)' }}>
+                                                                {row.seats.map((s, si) => <SeatTag key={si} seatObj={s} />)}
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    const leftSeats = row.seats.filter(s => s.pos.startsWith('L'));
+                                                    const rightSeats = row.seats.filter(s => s.pos.startsWith('R'));
+
+                                                    return (
+                                                        <div key={rowIndex} style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                            {/* Left side */}
+                                                            {leftSeats.map((s, si) => <SeatTag key={`L${si}`} seatObj={s} />)}
+                                                            {/* Aisle */}
+                                                            <div style={{ width: '32px' }}></div>
+                                                            {/* Right side */}
+                                                            {rightSeats.map((s, si) => <SeatTag key={`R${si}`} seatObj={s} />)}
+                                                        </div>
+                                                    );
+                                                });
+                                            })()}
+                                        </div>
+                                        <div style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600', letterSpacing: '2px' }}>BACK OF BUS</div>
                                     </div>
 
-                                    {/* Steering Wheel Indicator */}
-                                    <div style={{ width: '100%', maxWidth: '280px', display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem', paddingRight: '1rem' }}>
-                                        <div style={{ padding: '0.4rem', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text-muted)' }}>
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="2"></circle><line x1="12" y1="2" x2="12" y2="12"></line><line x1="12" y1="12" x2="22" y2="12"></line><line x1="12" y1="12" x2="5" y2="19"></line></svg>
+                                    {/* Right Side: Passenger Details */}
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1rem', color: 'var(--text-primary)' }}>Booking Details</h3>
+                                        <div style={{ marginBottom: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                                            <p><strong>Route:</strong> {seatData.schedule?.route?.origin} → {seatData.schedule?.route?.destination}</p>
+                                            <p><strong>Departure:</strong> {formatDate(seatData.schedule?.departureTime)}</p>
+                                            <p><strong>Bus:</strong> {seatData.schedule?.bus?.busNumber} ({seatData.capacity} seats)</p>
+                                            <p><strong>Booked:</strong> {seatData.bookedSeats.length} / {seatData.capacity}</p>
                                         </div>
-                                    </div>
 
-                                    {/* Grid */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', borderTop: '2px dashed var(--border)', paddingTop: '1.5rem', width: '100%' }}>
-                                        {generateSeatLayout(seatData.capacity).map((row, rowIndex) => {
-                                            const seatStyle = (seatObj) => {
-                                                if (!seatObj?.num) return { width: '40px', height: '40px' };
-                                                const isBooked = seatData.bookedSeats.includes(seatObj.num);
-                                                return {
-                                                    width: '40px', height: '40px',
-                                                    borderRadius: 'var(--radius-sm)',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: '0.875rem', fontWeight: '700',
-                                                    color: 'white',
-                                                    background: isBooked ? 'var(--danger)' : 'var(--success)',
-                                                    cursor: 'default',
-                                                    boxShadow: 'inset 0 -3px 0 rgba(0,0,0,0.1)'
-                                                };
-                                            };
-
-                                            if (row.isBack) {
-                                                return (
-                                                    <div key={rowIndex} style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border)' }}>
-                                                        {row.seats.map(s => <div key={s.num} style={seatStyle(s)}>{s.num}</div>)}
+                                        <h4 style={{ fontSize: '0.95rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>Passengers</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                                            {seatData.bookingDetails?.length === 0 ? (
+                                                <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No passengers yet.</div>
+                                            ) : (
+                                                seatData.bookingDetails?.map((b, idx) => (
+                                                    <div key={idx} style={{ padding: '0.75rem', background: 'var(--bg-color)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.85rem' }}>
+                                                        <div style={{ fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>Seat {b.seat}</div>
+                                                        <div style={{ color: 'var(--text-secondary)' }}>{b.passenger}</div>
+                                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{b.email}</div>
                                                     </div>
-                                                );
-                                            }
-
-                                            const leftSeats = row.seats.filter(s => s.pos.startsWith('L'));
-                                            const rightSeats = row.seats.filter(s => s.pos.startsWith('R'));
-
-                                            return (
-                                                <div key={rowIndex} style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                                    {/* Left side */}
-                                                    <div style={seatStyle(leftSeats[0])}>{leftSeats[0]?.num || ''}</div>
-                                                    <div style={seatStyle(leftSeats[1])}>{leftSeats[1]?.num || ''}</div>
-                                                    {/* Aisle */}
-                                                    <div style={{ width: '24px' }}></div>
-                                                    {/* Right side */}
-                                                    <div style={seatStyle(rightSeats[0])}>{rightSeats[0]?.num || ''}</div>
-                                                    <div style={seatStyle(rightSeats[1])}>{rightSeats[1]?.num || ''}</div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    <div style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600', letterSpacing: '2px' }}>BACK OF BUS</div>
-                                </div>
-
-                                {/* Right Side: Passenger Details */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1rem', color: 'var(--text-primary)' }}>Booking Details</h3>
-                                    <div style={{ marginBottom: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                                        <p><strong>Route:</strong> {seatData.schedule?.route?.origin} → {seatData.schedule?.route?.destination}</p>
-                                        <p><strong>Departure:</strong> {formatDate(seatData.schedule?.departureTime)}</p>
-                                        <p><strong>Bus:</strong> {seatData.schedule?.bus?.busNumber} ({seatData.capacity} seats)</p>
-                                        <p><strong>Booked:</strong> {seatData.bookedSeats.length} / {seatData.capacity}</p>
-                                    </div>
-
-                                    <h4 style={{ fontSize: '0.95rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>Passengers</h4>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                                        {seatData.bookingDetails?.length === 0 ? (
-                                            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>No passengers yet.</div>
-                                        ) : (
-                                            seatData.bookingDetails?.map((b, idx) => (
-                                                <div key={idx} style={{ padding: '0.75rem', background: 'var(--bg-color)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.85rem' }}>
-                                                    <div style={{ fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>Seat {b.seat}</div>
-                                                    <div style={{ color: 'var(--text-secondary)' }}>{b.passenger}</div>
-                                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{b.email}</div>
-                                                </div>
-                                            ))
-                                        )}
+                                                ))
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -83,7 +83,7 @@ const AdminDashboard = () => {
 
             {/* Dashboard Charts */}
             {!loading && analytics && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+                <div className="grid-charts">
 
                     {/* Bookings Trend (Last 7 Days) */}
                     <div className="card">
@@ -142,7 +142,7 @@ const AdminDashboard = () => {
             )}
 
             {/* Bottom Grid: Utilization, Actions, Bookings */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            <div className="grid-charts">
 
                 {/* Bus Utilization */}
                 <div className="card">
@@ -183,7 +183,7 @@ const AdminDashboard = () => {
                     <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1.25rem', color: 'var(--text-primary)' }}>
                         Quick Actions
                     </h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="grid-actions" style={{ display: 'grid', gap: '0.75rem' }}>
                         {[
                             { to: '/admin/buses', icon: <Bus size={20} />, label: 'Manage Buses', desc: 'Add, edit, or deactivate buses', color: '#1E40AF', bg: 'rgba(30,64,175,0.08)' },
                             { to: '/admin/routes', icon: <MapPin size={20} />, label: 'Manage Routes', desc: 'View & configure routes', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },

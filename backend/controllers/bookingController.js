@@ -115,6 +115,16 @@ const createBooking = async (req, res) => {
             return res.status(400).json({ message: 'You have previously cancelled a booking on this bus. You cannot rebook on the same trip.' });
         }
 
+        // Limit user to 1 booking per schedule
+        const existingBooking = await Booking.findOne({
+            user: userId,
+            schedule: scheduleId,
+            status: 'confirmed'
+        });
+        if (existingBooking) {
+            return res.status(400).json({ message: 'You have already booked a seat on this trip. Only one seat per user is allowed.' });
+        }
+
         // Check if seat is already booked
         const seatExists = await Booking.findOne({ schedule: scheduleId, seatNumber, status: 'confirmed' });
         if (seatExists) {
@@ -248,6 +258,58 @@ const cancelAdminBooking = async (req, res) => {
     }
 };
 
+// @desc    Passenger confirms participation
+// @route   PUT /api/bookings/:id/participate
+// @access  Private
+const confirmParticipation = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id);
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+        if (booking.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        booking.participated = true;
+        await booking.save();
+        res.json({ message: 'Participation confirmed', booking });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+// @desc    Passenger submits a rating
+// @route   PUT /api/bookings/:id/rate
+// @access  Private
+const submitRating = async (req, res) => {
+    try {
+        const { rating } = req.body;
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+        }
+
+        const booking = await Booking.findById(req.params.id);
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+        if (booking.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+        if (!booking.participated) {
+            return res.status(400).json({ message: 'Please confirm participation first' });
+        }
+
+        booking.rating = rating;
+        await booking.save();
+        res.json({ message: 'Rating submitted', booking });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 module.exports = {
     getActiveSchedules,
     getBookedSeats,
@@ -255,5 +317,7 @@ module.exports = {
     getMyBookings,
     cancelMyBooking,
     getAdminBookings,
-    cancelAdminBooking
+    cancelAdminBooking,
+    confirmParticipation,
+    submitRating
 };

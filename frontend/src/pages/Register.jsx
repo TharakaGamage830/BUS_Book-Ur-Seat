@@ -39,7 +39,7 @@ const Register = () => {
                         alt="BUS Logo"
                         style={{ height: '48px', objectFit: 'contain', margin: '0 auto 1.25rem' }}
                     />
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.3rem' }}>Create Account</h2>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.3rem', color: 'var(--auth-heading)' }}>Create Account</h2>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Sign up to start booking your trips</p>
                 </div>
 

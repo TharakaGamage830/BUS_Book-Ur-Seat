@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { getMyBookings, cancelMyBooking } from '../../api/booking';
-import { Clock, MapPin, Calendar, ArrowRight, XCircle, AlertCircle, CheckCircle, Ticket } from 'lucide-react';
+import { getMyBookings, cancelMyBooking, confirmParticipation, submitRating } from '../../api/booking';
+import { Clock, MapPin, Calendar, ArrowRight, XCircle, AlertCircle, CheckCircle, Ticket, Star } from 'lucide-react';
+
+const EMOJI_RATING = [
+    { value: 1, emoji: '😭', label: 'Terrible' },
+    { value: 2, emoji: '🙁', label: 'Bad' },
+    { value: 3, emoji: '😐', label: 'Okay' },
+    { value: 4, emoji: '😁', label: 'Good' },
+    { value: 5, emoji: '🤩', label: 'Excellent' }
+];
 
 const BookingHistory = () => {
     const [bookings, setBookings] = useState([]);
@@ -25,6 +33,28 @@ const BookingHistory = () => {
             load();
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to cancel booking.');
+        }
+    };
+
+    const handleParticipate = async (bookingId) => {
+        setError(''); setSuccess('');
+        try {
+            const res = await confirmParticipation(bookingId);
+            setSuccess(res.message || 'Participation confirmed! You can now rate your trip.');
+            load();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to confirm participation.');
+        }
+    };
+
+    const handleRate = async (bookingId, rating) => {
+        setError(''); setSuccess('');
+        try {
+            const res = await submitRating(bookingId, rating);
+            setSuccess(res.message || 'Thank you for your rating!');
+            load();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to submit rating.');
         }
     };
 
@@ -56,7 +86,10 @@ const BookingHistory = () => {
                         const isCancelled = b.status === 'cancelled';
                         const canCancelIt = canCancel(b);
                         const departure = new Date(b.schedule?.departureTime);
-                        const isPast = departure < new Date();
+                        const arrival = new Date(b.schedule?.arrivalTime);
+
+                        // Treat as past if arrival time is over OR departure was long ago if arrival is missing
+                        const isPast = arrival ? arrival < new Date() : departure < new Date();
 
                         return (
                             <div key={b._id} className="card" style={{ borderLeft: `4px solid ${isCancelled ? 'var(--danger)' : isPast ? 'var(--border-strong)' : 'var(--primary)'}`, opacity: isCancelled ? 0.7 : 1, padding: '1.25rem 1.5rem' }}>
@@ -93,6 +126,62 @@ const BookingHistory = () => {
                                     <div className="info-callout" style={{ marginTop: '0.75rem', marginBottom: 0, fontSize: '0.75rem' }}>
                                         <AlertCircle size={14} color="var(--accent)" />
                                         <span>You can cancel this booking up to 24 hours before departure. After cancellation, you cannot rebook on this trip.</span>
+                                    </div>
+                                )}
+
+                                {/* Post-Trip Actions (Participation & Rating) */}
+                                {isPast && !isCancelled && (
+                                    <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px dashed var(--border)' }}>
+
+                                        {!b.participated ? (
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                                                <div>
+                                                    <h4 style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '0.25rem' }}>Did you take this trip?</h4>
+                                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Please confirm your participation to rate your journey.</p>
+                                                </div>
+                                                <button onClick={() => handleParticipate(b._id)} className="btn btn-primary btn-sm" style={{ padding: '0.5rem 1rem' }}>
+                                                    Confirm Participation
+                                                </button>
+                                            </div>
+                                        ) : !b.rating ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                                                <h4 style={{ fontSize: '0.9rem', fontWeight: '700', margin: 0 }}>How was your trip?</h4>
+                                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, marginBottom: '0.5rem' }}>Click a face to submit your rating:</p>
+
+                                                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                                    {EMOJI_RATING.map((rate) => (
+                                                        <button
+                                                            key={rate.value}
+                                                            onClick={() => handleRate(b._id, rate.value)}
+                                                            title={rate.label}
+                                                            style={{
+                                                                background: 'none', border: '1px solid var(--border-strong)',
+                                                                borderRadius: '50%', width: '45px', height: '45px',
+                                                                fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                cursor: 'pointer', transition: 'transform 0.2s, backgroundColor 0.2s',
+                                                                backgroundColor: 'var(--bg-color)',
+                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                                            }}
+                                                            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.backgroundColor = 'var(--surface)'; }}
+                                                            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.backgroundColor = 'var(--bg-color)'; }}
+                                                        >
+                                                            {rate.emoji}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-color)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--success)' }}>
+                                                <div style={{ fontSize: '1.75rem' }}>
+                                                    {EMOJI_RATING.find(r => r.value === b.rating)?.emoji}
+                                                </div>
+                                                <div>
+                                                    <h4 style={{ fontSize: '0.9rem', fontWeight: '700', margin: 0, color: 'var(--success)' }}>Participation Confirmed</h4>
+                                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>You rated this trip as {EMOJI_RATING.find(r => r.value === b.rating)?.label}.</p>
+                                                </div>
+                                            </div>
+                                        )}
+
                                     </div>
                                 )}
                             </div>

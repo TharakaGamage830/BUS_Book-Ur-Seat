@@ -19,6 +19,7 @@
 
 /* ───── LIGHT THEME ───── */
 [data-theme='light'] {
+  color-scheme: light;
   --bg-color: #F5F7FA;
   --surface: #FFFFFF;
   --card-bg: #FFFFFF;
@@ -43,6 +44,7 @@
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
   --text-on-primary: #FFFFFF;
+  --auth-heading: #1D4ED8;
 
   --border: #E5E7EB;
   --border-strong: #D1D5DB;
@@ -56,6 +58,7 @@
 
 /* ───── DARK THEME ───── */
 [data-theme='dark'] {
+  color-scheme: dark;
   --bg-color: #0F1117;
   --surface: #181B23;
   --card-bg: #1E2130;
@@ -80,6 +83,7 @@
   --text-secondary: #9CA3AF;
   --text-muted: #6B7280;
   --text-on-primary: #FFFFFF;
+  --auth-heading: #FFFFFF;
 
   --border: #2D3242;
   --border-strong: #3B4055;
@@ -822,6 +826,36 @@ input:checked+.toggle-slider:before {
 /* ================================================================
    RESPONSIVE
    ================================================================ */
+
+/* Utility classes for responsive grid layouts */
+.grid-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.grid-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Data Table Wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 900px) {
+  .grid-sidebar {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .auth-card {
     padding: 2rem 1.25rem;
@@ -833,5 +867,26 @@ input:checked+.toggle-slider:before {
 
   .page-wrapper {
     padding: 1.25rem 1rem;
+  }
+
+  .grid-charts {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Stat cards on mobile */
+  .stat-card {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Quick Actions spacing on mobile */
+  .grid-actions {
+    grid-template-columns: 1fr;
   }
 }

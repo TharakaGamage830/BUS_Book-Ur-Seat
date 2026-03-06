@@ -84,7 +84,7 @@ const ManageBookings = () => {
                         <span className="badge badge-danger">{bookings.filter(b => b.status === 'cancelled').length} Cancelled</span>
                     </div>
                 </div>
-                <div className="scrollable">
+                <div className="table-responsive">
                     <table className="data-table">
                         <thead>
                             <tr>

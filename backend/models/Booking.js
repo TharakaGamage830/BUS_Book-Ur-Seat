@@ -30,6 +30,16 @@ const bookingSchema = new mongoose.Schema({
         enum: ['confirmed', 'cancelled'],
         default: 'confirmed'
     },
+    participated: {
+        type: Boolean,
+        default: null
+    },
+    rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: null
+    },
     paymentId: {
         type: String,
         default: 'cash-on-boarding'

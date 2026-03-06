@@ -142,7 +142,7 @@ const ManageRoutes = () => {
                         Routes ({routes.length})
                     </h2>
                 </div>
-                <div className="scrollable">
+                <div className="table-responsive">
                     <table className="data-table">
                         <thead>
                             <tr>

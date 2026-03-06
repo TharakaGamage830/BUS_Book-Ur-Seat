@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getScheduleSeats, createBooking } from '../api/booking';
 import { ArrowLeft, CheckCircle, AlertCircle, Bus, MapPin, Clock, Calendar, Shield, Info } from 'lucide-react';
-import { generateSeatLayout } from './admin/ManageBuses';
+import { generateDynamicLayout } from './admin/ManageBuses';
 
 const BookingSeatSelection = () => {
     const { scheduleId } = useParams();
     const navigate = useNavigate();
 
     const [scheduleDetails, setScheduleDetails] = useState(null);
-    const [capacity, setCapacity] = useState(0);
+    const [busDetails, setBusDetails] = useState(null);
     const [bookedSeats, setBookedSeats] = useState([]);
     const [selectedSeat, setSelectedSeat] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ const BookingSeatSelection = () => {
                 setLoading(true);
                 const data = await getScheduleSeats(scheduleId);
                 setScheduleDetails(data.schedule);
-                setCapacity(data.capacity);
+                setBusDetails(data.schedule.bus || { capacity: data.capacity });
                 setBookedSeats(data.bookedSeats || []);
             } catch (err) {
                 setError(err.response?.data?.message || 'Failed to load seat layout.');
@@ -63,13 +63,18 @@ const BookingSeatSelection = () => {
     };
 
     /**
-     * Renders the seat grid using the same Sri Lankan bus layout:
-     * - Last row: 5 seats (no aisle gap)
-     * - Normal rows: 2 left + aisle + 2 right
-     * - First row: partial based on (capacity - 5) % 4
+     * Renders the seat grid using the saved custom layout from the bus model.
      */
     const renderSeatGrid = () => {
-        const rows = generateSeatLayout(capacity);
+        if (!busDetails) return null;
+
+        let rows = [];
+        if (busDetails.layout && busDetails.layout.length > 0) {
+            rows = busDetails.layout;
+        } else {
+            rows = generateDynamicLayout(busDetails.capacity || 40, busDetails.layoutParams);
+        }
+
         if (rows.length === 0) return null;
 
         return rows.map((row, ri) => {
@@ -78,6 +83,9 @@ const BookingSeatSelection = () => {
                 return (
                     <div key={ri} style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', marginTop: '0.4rem', paddingTop: '0.5rem', borderTop: '2px dashed var(--border)' }}>
                         {row.seats.map(s => {
+                            if (!s || s.num === null) {
+                                return <div key={s.slotId || Math.random()} className="seat empty-slot" style={{ visibility: 'hidden' }}></div>;
+                            }
                             const isBooked = bookedSeats.includes(s.num);
                             const isSelected = selectedSeat === s.num;
                             let cls = 'seat available';
@@ -98,8 +106,8 @@ const BookingSeatSelection = () => {
             const rightSeats = row.seats.filter(s => s.pos.startsWith('R'));
 
             const renderSlot = (seat) => {
-                if (!seat) {
-                    return <div className="seat empty-slot" style={{ opacity: 0, cursor: 'default' }}></div>;
+                if (!seat || seat.num === null) {
+                    return <div key={seat?.slotId || Math.random()} className="seat empty-slot" style={{ visibility: 'hidden' }}></div>;
                 }
                 const isBooked = bookedSeats.includes(seat.num);
                 const isSelected = selectedSeat === seat.num;
@@ -188,10 +196,10 @@ const BookingSeatSelection = () => {
 
             {error && <div className="error-message"><AlertCircle size={14} /> {error}</div>}
 
-            {/* Main grid: Seat map + Booking summary */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem', alignItems: 'start' }}>
+            {/* Seat Map & Booking Summary */}
+            <div className="grid-sidebar">
 
-                {/* Seat Map */}
+                {/* Left: Seat Selection */}
                 <div className="card">
                     <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         Select Your Seat
@@ -317,7 +325,7 @@ const BookingSeatSelection = () => {
                             </div>
 
                             <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={!selectedSeat || bookingInProgress}>
-                                {bookingInProgress ? 'Processing...' : selectedSeat ? 'Proceed to Payment' : 'Select a Seat First'}
+                                {bookingInProgress ? 'Processing...' : selectedSeat ? 'Book Now' : 'Select a Seat First'}
                             </button>
 
                             <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>

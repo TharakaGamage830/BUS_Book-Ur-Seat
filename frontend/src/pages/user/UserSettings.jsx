@@ -49,7 +49,7 @@ const UserSettings = () => {
             {error && <div className="error-message"><AlertCircle size={14} /> {error}</div>}
             {success && <div className="success-message"><CheckCircle size={14} /> {success}</div>}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 {/* Profile Info */}
                 <div className="card">
                     <h2 style={{ fontSize: '1.05rem', fontWeight: '700', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
