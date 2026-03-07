@@ -153,6 +153,73 @@ const Home = () => {
                 )}
             </section>
 
+            {/* HOW IT WORKS */}
+            {!hasSearched && (
+                <section style={{ backgroundColor: 'var(--surface)', padding: '4.5rem 1.25rem', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto', textAlign: 'center' }}>
+                        <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>How It Works</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Book your bus seat in four simple steps</p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                            {[
+                                { step: '1', icon: <Search size={28} />, title: 'Search Route', desc: 'Enter your origin, destination and travel date.' },
+                                { step: '2', icon: <Bus size={28} />, title: 'Select Bus', desc: 'Compare available buses, operators, and prices.' },
+                                { step: '3', icon: <Armchair size={28} />, title: 'Choose Seat', desc: 'Pick your preferred seat from the interactive layout.' },
+                                { step: '4', icon: <Shield size={28} />, title: 'Confirm & Pay', desc: 'Securely pay and receive your ticket instantly.' }
+                            ].map((item, i) => (
+                                <div key={i} style={{ position: 'relative' }}>
+                                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', position: 'relative', zIndex: 2 }}>
+                                        {item.icon}
+                                        <div style={{ position: 'absolute', top: '-5px', right: '-5px', width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent)', color: '#111827', fontWeight: '800', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--surface)' }}>
+                                            {item.step}
+                                        </div>
+                                    </div>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{item.title}</h3>
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{item.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* POPULAR ROUTES */}
+            {!hasSearched && (
+                <section style={{ padding: '4.5rem 1.25rem' }}>
+                    <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div>
+                                <h2 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Popular Routes</h2>
+                                <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Most traveled routes across Sri Lanka</p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+                            {[
+                                { from: 'Colombo', to: 'Kandy', price: 'Rs. 800', time: '3h 30m', desc: 'Hill capital express' },
+                                { from: 'Colombo', to: 'Galle', price: 'Rs. 1,200', time: '2h 15m', desc: 'Highway cruiser' },
+                                { from: 'Kandy', to: 'Nuwara Eliya', price: 'Rs. 500', time: '2h 45m', desc: 'Scenic mountain route' },
+                                { from: 'Colombo', to: 'Matara', price: 'Rs. 1,500', time: '2h 45m', desc: 'Southern expressway' }
+                            ].map((route, i) => (
+                                <div key={i} className="card card-hover" style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => { setSearchParams({ origin: route.from, destination: route.to, date: '' }); window.scrollTo(0, 0); }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                        <span className="badge badge-primary">Popular</span>
+                                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: '600' }}><Clock size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.2rem' }} />{route.time}</span>
+                                    </div>
+                                    <div style={{ fontSize: '1.15rem', fontWeight: '800', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+                                        {route.from} <ArrowRight size={14} color="var(--primary)" /> {route.to}
+                                    </div>
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>{route.desc}</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px dashed var(--border)' }}>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Starting from<br /><span style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--text-primary)' }}>{route.price}</span></div>
+                                        <button className="btn btn-primary btn-sm">Search</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* FEATURES */}
             <section style={{ background: 'var(--section-bg)', padding: '3.5rem 1.25rem' }}>
                 <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto', textAlign: 'center' }}>
@@ -168,6 +235,25 @@ const Home = () => {
                                 <div style={{ width: '50px', height: '50px', borderRadius: 'var(--radius-md)', background: `${f.color}11`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: f.color }}>{f.icon}</div>
                                 <h3 style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '0.4rem' }}>{f.title}</h3>
                                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* PLATFORM STATS */}
+            <section style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #1D4ED8 100%)', padding: '3.5rem 1.25rem', color: 'white' }}>
+                <div style={{ maxWidth: 'var(--max-width)', margin: '0 auto' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem', textAlign: 'center' }}>
+                        {[
+                            { number: '15,000+', label: 'Seats Booked' },
+                            { number: '45+', label: 'Cities Covered' },
+                            { number: '120+', label: 'Bus Operators' },
+                            { number: '4.8/5', label: 'User Rating' }
+                        ].map((stat, i) => (
+                            <div key={i}>
+                                <div style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '0.25rem', color: 'var(--accent)', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>{stat.number}</div>
+                                <div style={{ fontSize: '0.9rem', fontWeight: '600', opacity: 0.9, letterSpacing: '0.02em', textTransform: 'uppercase' }}>{stat.label}</div>
                             </div>
                         ))}
                     </div>
